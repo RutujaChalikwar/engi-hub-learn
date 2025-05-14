@@ -1,5 +1,6 @@
 
-import CourseCard, { Course } from "./CourseCard";
+import CourseCard from "./CourseCard";
+import { Course } from "./CourseCard";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";

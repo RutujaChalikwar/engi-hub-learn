@@ -1,6 +1,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
-import CourseGrid, { Course } from "@/components/courses/CourseGrid";
+import CourseGrid from "@/components/courses/CourseGrid";
+import { Course } from "@/components/courses/CourseCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Mock data for enrolled courses

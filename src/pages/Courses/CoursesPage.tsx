@@ -9,7 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import CourseGrid, { Course } from "@/components/courses/CourseGrid";
+import CourseGrid from "@/components/courses/CourseGrid";
+import { Course } from "@/components/courses/CourseCard";
 
 // Mock data for courses
 const mockCourses: Course[] = [

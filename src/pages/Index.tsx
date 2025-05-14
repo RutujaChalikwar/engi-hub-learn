@@ -3,15 +3,16 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/layout/Navbar";
 import CourseCard from "@/components/courses/CourseCard";
+import { Course } from "@/components/courses/CourseCard";
 
 // Featured courses
-const featuredCourses = [
+const featuredCourses: Course[] = [
   {
     id: "course1",
     title: "Introduction to Electrical Engineering",
     description: "Learn the basics of electrical engineering, including circuits, power systems, and electronics.",
     instructor: "Dr. Emily Johnson",
-    level: "Beginner",
+    level: "Beginner" as "Beginner", // Fixed type
     duration: "10 weeks",
     enrolledCount: 1250,
     imageUrl: "https://images.unsplash.com/photo-1581092921461-eab10380699b",
@@ -22,7 +23,7 @@ const featuredCourses = [
     title: "Machine Learning for Engineers",
     description: "Apply machine learning techniques to solve engineering problems with practical applications.",
     instructor: "Prof. Michael Chen",
-    level: "Intermediate",
+    level: "Intermediate" as "Intermediate", // Fixed type
     duration: "8 weeks",
     enrolledCount: 850,
     imageUrl: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
@@ -33,7 +34,7 @@ const featuredCourses = [
     title: "Structural Analysis for Civil Engineers",
     description: "Master the principles of structural analysis for buildings, bridges, and infrastructure.",
     instructor: "Dr. Sarah Williams",
-    level: "Advanced",
+    level: "Advanced" as "Advanced", // Fixed type
     duration: "12 weeks",
     enrolledCount: 620,
     imageUrl: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6",
