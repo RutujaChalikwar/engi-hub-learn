@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 
 // Pages
@@ -35,16 +35,21 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/courses" element={<CoursesPage />} />
 
-            {/* Auth Routes */}
+            {/* Auth Routes - Protected from authenticated users */}
             <Route element={<AuthLayout />}>
               <Route path="/sign-in" element={<SignIn />} />
               <Route path="/sign-up" element={<SignUp />} />
             </Route>
 
-            {/* Dashboard Routes */}
+            {/* Dashboard Routes - Protected from unauthenticated users */}
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<UserDashboard />} />
               <Route path="admin" element={<AdminDashboard />} />
+              {/* Add routes for the other sidebar items */}
+              <Route path="my-courses" element={<div>My Courses Page</div>} />
+              <Route path="schedule" element={<div>Schedule Page</div>} />
+              <Route path="profile" element={<div>Profile Page</div>} />
+              <Route path="settings" element={<div>Settings Page</div>} />
             </Route>
 
             {/* 404 - Not Found */}
