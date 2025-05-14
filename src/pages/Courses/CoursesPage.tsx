@@ -84,8 +84,8 @@ const mockCourses: Course[] = [
 
 const CoursesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("");
-  const [levelFilter, setLevelFilter] = useState<string>("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [levelFilter, setLevelFilter] = useState<string>("all");
 
   const filteredCourses = mockCourses.filter((course) => {
     // Apply search query filter
@@ -94,10 +94,10 @@ const CoursesPage = () => {
                           course.instructor.toLowerCase().includes(searchQuery.toLowerCase());
     
     // Apply category filter
-    const matchesCategory = categoryFilter === "" || course.category === categoryFilter;
+    const matchesCategory = categoryFilter === "all" || course.category === categoryFilter;
     
     // Apply level filter
-    const matchesLevel = levelFilter === "" || course.level === levelFilter;
+    const matchesLevel = levelFilter === "all" || course.level === levelFilter;
     
     return matchesSearch && matchesCategory && matchesLevel;
   });
@@ -130,7 +130,7 @@ const CoursesPage = () => {
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category}
@@ -143,7 +143,7 @@ const CoursesPage = () => {
                 <SelectValue placeholder="Level" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Levels</SelectItem>
+                <SelectItem value="all">All Levels</SelectItem>
                 {levels.map((level) => (
                   <SelectItem key={level} value={level}>
                     {level}
@@ -158,8 +158,8 @@ const CoursesPage = () => {
             variant="outline"
             onClick={() => {
               setSearchQuery("");
-              setCategoryFilter("");
-              setLevelFilter("");
+              setCategoryFilter("all");
+              setLevelFilter("all");
             }}
             size="sm"
           >
