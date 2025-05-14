@@ -33,6 +33,9 @@ export const useAuth = () => {
   return context;
 };
 
+// Add a localStorage key for persisting auth state
+const USER_STORAGE_KEY = "edu_engineer_user";
+
 interface AuthProviderProps {
   children: ReactNode;
 }
@@ -40,6 +43,30 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Load user from localStorage on initial render
+  useEffect(() => {
+    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+    if (storedUser) {
+      try {
+        setCurrentUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error("Error parsing stored user data", error);
+        localStorage.removeItem(USER_STORAGE_KEY);
+      }
+    }
+    setLoading(false);
+  }, []);
+
+  // Helper function to persist user to localStorage
+  const persistUser = (user: User | null) => {
+    if (user) {
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(USER_STORAGE_KEY);
+    }
+    setCurrentUser(user);
+  };
 
   // Mock authentication methods
   // These will be replaced with actual Firebase Auth methods
@@ -56,7 +83,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         photoURL: null,
         role: email.includes("admin") ? "admin" : "user",
       };
-      setCurrentUser(mockUser);
+      persistUser(mockUser);
     } finally {
       setLoading(false);
     }
@@ -75,7 +102,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         photoURL: "https://via.placeholder.com/150",
         role: "user",
       };
-      setCurrentUser(mockUser);
+      persistUser(mockUser);
     } finally {
       setLoading(false);
     }
@@ -94,7 +121,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         photoURL: null,
         role: "user",
       };
-      setCurrentUser(mockUser);
+      persistUser(mockUser);
     } finally {
       setLoading(false);
     }
@@ -104,7 +131,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       // Mock sign out logic
       console.log("Sign out");
-      setCurrentUser(null);
+      persistUser(null);
     } catch (error) {
       console.error("Error signing out", error);
     }
@@ -119,15 +146,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       throw error;
     }
   };
-
-  useEffect(() => {
-    // This will be replaced with Firebase auth state listener
-    const checkAuth = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(checkAuth);
-  }, []);
 
   const isAdmin = currentUser?.role === "admin";
 
@@ -144,7 +162,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
