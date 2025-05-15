@@ -10,6 +10,8 @@ export type UserRole = "admin" | "user";
 // Extend Supabase User with our custom properties
 export interface User extends SupabaseUser {
   role: UserRole;
+  displayName?: string;
+  photoURL?: string;
 }
 
 interface AuthContextType {
@@ -49,9 +51,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session) {
+          // Extend the User with our custom properties
           const user = session.user as User;
+          
           // For demo purposes, assume users with admin in email are admins
           user.role = user.email?.includes("admin") ? "admin" : "user";
+          
+          // Set display name based on user metadata or email
+          user.displayName = (
+            user.user_metadata?.full_name || 
+            user.user_metadata?.name || 
+            user.email?.split('@')[0] ||
+            'User'
+          );
+          
+          // Set photo URL if available from providers
+          user.photoURL = user.user_metadata?.avatar_url || user.user_metadata?.picture || undefined;
+          
           setCurrentUser(user);
           setSession(session);
         } else {
@@ -67,9 +83,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Then check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
+        // Extend the User with our custom properties
         const user = session.user as User;
+        
         // For demo purposes, assume users with admin in email are admins
         user.role = user.email?.includes("admin") ? "admin" : "user";
+        
+        // Set display name based on user metadata or email
+        user.displayName = (
+          user.user_metadata?.full_name || 
+          user.user_metadata?.name || 
+          user.email?.split('@')[0] ||
+          'User'
+        );
+        
+        // Set photo URL if available from providers
+        user.photoURL = user.user_metadata?.avatar_url || user.user_metadata?.picture || undefined;
+        
         setCurrentUser(user);
         setSession(session);
       }
