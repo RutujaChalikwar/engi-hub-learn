@@ -31,9 +31,9 @@ const SignUpForm = () => {
     try {
       await signUp(email, password, displayName);
       navigate("/dashboard");
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to create an account. Please try again.");
+      setError("Failed to create an account. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -45,10 +45,11 @@ const SignUpForm = () => {
     
     try {
       await signInWithGoogle();
-      // No need to navigate here as OAuth will redirect
-    } catch (err: any) {
+      navigate("/dashboard");
+    } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to sign in with Google. Please try again.");
+      setError("Failed to sign in with Google. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
@@ -96,7 +97,6 @@ const SignUpForm = () => {
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
               required
-              minLength={6}
             />
           </div>
           <div className="space-y-2">
@@ -107,7 +107,6 @@ const SignUpForm = () => {
               value={confirmPassword} 
               onChange={(e) => setConfirmPassword(e.target.value)} 
               required
-              minLength={6}
             />
           </div>
           <Button 

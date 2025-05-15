@@ -24,9 +24,9 @@ const SignInForm = () => {
     try {
       await signIn(email, password);
       navigate("/dashboard");
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to sign in. Please check your credentials.");
+      setError("Failed to sign in. Please check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -38,10 +38,11 @@ const SignInForm = () => {
     
     try {
       await signInWithGoogle();
-      // No need to navigate here as OAuth will redirect
-    } catch (err: any) {
+      navigate("/dashboard");
+    } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to sign in with Google. Please try again.");
+      setError("Failed to sign in with Google. Please try again.");
+    } finally {
       setLoading(false);
     }
   };

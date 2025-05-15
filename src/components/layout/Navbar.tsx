@@ -61,7 +61,7 @@ const Navbar = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar>
-                      <AvatarImage src={currentUser.photoURL} alt={currentUser.displayName || ""} />
+                      <AvatarImage src={currentUser.photoURL || undefined} alt={currentUser.displayName || ""} />
                       <AvatarFallback>
                         {currentUser.displayName
                           ? currentUser.displayName.substring(0, 2).toUpperCase()
@@ -170,7 +170,7 @@ const Navbar = () => {
               <div className="flex items-center px-4">
                 <div className="flex-shrink-0">
                   <Avatar>
-                    <AvatarImage src={currentUser.photoURL} alt={currentUser.displayName || ""} />
+                    <AvatarImage src={currentUser.photoURL || undefined} alt={currentUser.displayName || ""} />
                     <AvatarFallback>
                       {currentUser.displayName
                         ? currentUser.displayName.substring(0, 2).toUpperCase()
