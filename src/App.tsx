@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SignIn from "./pages/Auth/SignIn";
 import SignUp from "./pages/Auth/SignUp";
+import ForgotPassword from "./pages/Auth/ForgotPassword";
 import CoursesPage from "./pages/Courses/CoursesPage";
 
 // Layouts
@@ -39,6 +40,7 @@ const App = () => (
             <Route element={<AuthLayout />}>
               <Route path="/sign-in" element={<SignIn />} />
               <Route path="/sign-up" element={<SignUp />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
             </Route>
 
             {/* Dashboard Routes - Protected from unauthenticated users */}

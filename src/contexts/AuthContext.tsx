@@ -1,19 +1,20 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { User as SupabaseUser, Session } from "@supabase/supabase-js";
+import { toast } from "@/components/ui/use-toast";
 
-// Mock user type - will be replaced with Firebase User type
+// Define user role type
 export type UserRole = "admin" | "user";
 
-export interface User {
-  id: string;
-  email: string;
-  displayName: string | null;
-  photoURL: string | null;
+// Extend Supabase User with our custom properties
+export interface User extends SupabaseUser {
   role: UserRole;
 }
 
 interface AuthContextType {
   currentUser: User | null;
+  session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
@@ -33,95 +34,135 @@ export const useAuth = () => {
   return context;
 };
 
-// Add a localStorage key for persisting auth state
-const USER_STORAGE_KEY = "edu_engineer_user";
-
 interface AuthProviderProps {
   children: ReactNode;
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Load user from localStorage on initial render
+  // Initialize auth state and set up listener for auth state changes
   useEffect(() => {
-    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-    if (storedUser) {
-      try {
-        setCurrentUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Error parsing stored user data", error);
-        localStorage.removeItem(USER_STORAGE_KEY);
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session) {
+          const user = session.user as User;
+          // For demo purposes, assume users with admin in email are admins
+          user.role = user.email?.includes("admin") ? "admin" : "user";
+          setCurrentUser(user);
+          setSession(session);
+        } else {
+          setCurrentUser(null);
+          setSession(null);
+        }
+
+        // Debug logs
+        console.log("Auth state changed:", event, session);
       }
-    }
-    setLoading(false);
+    );
+
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        const user = session.user as User;
+        // For demo purposes, assume users with admin in email are admins
+        user.role = user.email?.includes("admin") ? "admin" : "user";
+        setCurrentUser(user);
+        setSession(session);
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  // Helper function to persist user to localStorage
-  const persistUser = (user: User | null) => {
-    if (user) {
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
-    } else {
-      localStorage.removeItem(USER_STORAGE_KEY);
-    }
-    setCurrentUser(user);
-  };
-
-  // Mock authentication methods
-  // These will be replaced with actual Firebase Auth methods
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     try {
-      // Mock sign in logic
-      console.log(`Sign in with ${email} and ${password}`);
-      // For demo purposes only - will be replaced with Firebase auth
-      const mockUser: User = {
-        id: "user123",
-        email: email,
-        displayName: email.split("@")[0],
-        photoURL: null,
-        role: email.includes("admin") ? "admin" : "user",
-      };
-      persistUser(mockUser);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        throw error;
+      }
+      
+      // No need to set user/session here as the onAuthStateChange listener will catch this
+      
+    } catch (error: any) {
+      console.error("Sign in error:", error.message);
+      toast({
+        variant: "destructive",
+        title: "Sign in failed",
+        description: error.message || "Unable to sign in. Please check your credentials."
+      });
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
   const signInWithGoogle = async () => {
-    setLoading(true);
     try {
-      // Mock Google sign in logic
-      console.log("Sign in with Google");
-      // For demo purposes only
-      const mockUser: User = {
-        id: "google123",
-        email: "user@example.com",
-        displayName: "Google User",
-        photoURL: "https://via.placeholder.com/150",
-        role: "user",
-      };
-      persistUser(mockUser);
-    } finally {
-      setLoading(false);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+      
+      if (error) {
+        throw error;
+      }
+    } catch (error: any) {
+      console.error("Google sign in error:", error.message);
+      toast({
+        variant: "destructive",
+        title: "Google sign in failed",
+        description: error.message || "Unable to sign in with Google."
+      });
+      throw error;
     }
   };
 
   const signUp = async (email: string, password: string, displayName: string) => {
     setLoading(true);
     try {
-      // Mock sign up logic
-      console.log(`Sign up with ${email}, ${password}, and ${displayName}`);
-      // For demo purposes only
-      const mockUser: User = {
-        id: "newuser123",
-        email: email,
-        displayName: displayName,
-        photoURL: null,
-        role: "user",
-      };
-      persistUser(mockUser);
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            display_name: displayName
+          }
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Account created",
+        description: "You have successfully signed up."
+      });
+      
+      // No need to set user/session here as the onAuthStateChange listener will catch this
+      
+    } catch (error: any) {
+      console.error("Sign up error:", error.message);
+      toast({
+        variant: "destructive",
+        title: "Sign up failed",
+        description: error.message || "Unable to create account."
+      });
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -129,20 +170,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signOut = async () => {
     try {
-      // Mock sign out logic
-      console.log("Sign out");
-      persistUser(null);
-    } catch (error) {
-      console.error("Error signing out", error);
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        throw error;
+      }
+      // No need to clear user/session here as the onAuthStateChange listener will catch this
+    } catch (error: any) {
+      console.error("Sign out error:", error.message);
+      toast({
+        variant: "destructive",
+        title: "Sign out failed",
+        description: error.message || "Unable to sign out."
+      });
     }
   };
 
   const resetPassword = async (email: string) => {
     try {
-      // Mock reset password logic
-      console.log(`Reset password for ${email}`);
-    } catch (error) {
-      console.error("Error resetting password", error);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Password reset email sent",
+        description: "Check your email for the password reset link."
+      });
+    } catch (error: any) {
+      console.error("Password reset error:", error.message);
+      toast({
+        variant: "destructive",
+        title: "Password reset failed",
+        description: error.message || "Unable to send password reset email."
+      });
       throw error;
     }
   };
@@ -151,6 +214,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const value: AuthContextType = {
     currentUser,
+    session,
     loading,
     signIn,
     signInWithGoogle,
