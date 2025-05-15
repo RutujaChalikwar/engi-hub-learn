@@ -1,40 +1,12 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { User as SupabaseUser, Session } from "@supabase/supabase-js";
+import { Session } from "@supabase/supabase-js";
 import { toast } from "@/components/ui/use-toast";
-
-// Define user role type
-export type UserRole = "admin" | "user";
-
-// Extend Supabase User with our custom properties
-export interface User extends SupabaseUser {
-  role: UserRole;
-  displayName?: string;
-  photoURL?: string;
-}
-
-interface AuthContextType {
-  currentUser: User | null;
-  session: Session | null;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
-  signUp: (email: string, password: string, displayName: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
-  isAdmin: boolean;
-}
+import { User, AuthContextType } from "@/types/auth.types";
+import { enhanceUserWithCustomProps } from "@/utils/auth.utils";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -51,23 +23,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session) {
-          // Extend the User with our custom properties
-          const user = session.user as User;
-          
-          // For demo purposes, assume users with admin in email are admins
-          user.role = user.email?.includes("admin") ? "admin" : "user";
-          
-          // Set display name based on user metadata or email
-          user.displayName = (
-            user.user_metadata?.full_name || 
-            user.user_metadata?.name || 
-            user.email?.split('@')[0] ||
-            'User'
-          );
-          
-          // Set photo URL if available from providers
-          user.photoURL = user.user_metadata?.avatar_url || user.user_metadata?.picture || undefined;
-          
+          const user = enhanceUserWithCustomProps(session.user);
           setCurrentUser(user);
           setSession(session);
         } else {
@@ -83,23 +39,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Then check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        // Extend the User with our custom properties
-        const user = session.user as User;
-        
-        // For demo purposes, assume users with admin in email are admins
-        user.role = user.email?.includes("admin") ? "admin" : "user";
-        
-        // Set display name based on user metadata or email
-        user.displayName = (
-          user.user_metadata?.full_name || 
-          user.user_metadata?.name || 
-          user.email?.split('@')[0] ||
-          'User'
-        );
-        
-        // Set photo URL if available from providers
-        user.photoURL = user.user_metadata?.avatar_url || user.user_metadata?.picture || undefined;
-        
+        const user = enhanceUserWithCustomProps(session.user);
         setCurrentUser(user);
         setSession(session);
       }
@@ -260,3 +200,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+export { AuthContext };
+export { useAuth } from "@/hooks/useAuth";
