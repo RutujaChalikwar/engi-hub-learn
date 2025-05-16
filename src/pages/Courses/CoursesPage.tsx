@@ -80,6 +80,17 @@ const mockCourses: Course[] = [
     imageUrl: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
     category: "Computer Science"
   },
+  {
+    id: "course7",
+    title: "Software Engineering Principles",
+    description: "Master the fundamentals of software engineering, including design patterns, testing, and deployment.",
+    instructor: "Prof. Alan Turing",
+    level: "Beginner",
+    duration: "8 weeks",
+    enrolledCount: 1100,
+    imageUrl: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
+    category: "Computer Science"
+  },
 ];
 
 const CoursesPage = () => {
